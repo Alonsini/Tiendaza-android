@@ -13,6 +13,8 @@ class PublicacionRepository {
         add(Publicacion(3, "Tablet Lenovo", "Pantalla 10 pulgadas"))
         add(Publicacion(4, "Audífonos JBL", "Bluetooth"))
         add(Publicacion(5, "Monitor LG", "4K UltraHD"))
+        add(Publicacion(6, "prueba", "pa ver si funciona el git push"))
+
     }
 
 
