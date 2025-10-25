@@ -4,4 +4,6 @@ data class Publicacion(
     val id: Int,
     val titulo: String,
     val descripcion: String,
+    val precio: Int,
+    val urlImg: String
 )

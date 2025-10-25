@@ -20,7 +20,9 @@ import androidx.navigation.navArgument
 import com.example.tiendaza.navigation.BottomBar
 import com.example.tiendaza.navigation.BottomNavItem
 import com.example.tiendaza.navigation.Routes
+import com.example.tiendaza.ui.screens.DetailScreen
 import com.example.tiendaza.ui.screens.HomeScreen
+import com.example.tiendaza.ui.screens.SearchScreen
 import com.example.tiendaza.ui.theme.TiendazaTheme
 import com.example.tiendaza.ui.viewmodel.MainViewModel
 
@@ -53,6 +55,23 @@ fun App() {
                     navController.navigate(Routes.detailRoute(id))
                 })
             }
+
+            composable(Routes.SEARCH) {
+                val vm: MainViewModel = viewModel()
+                SearchScreen(viewModel = vm, onItemClick = { id ->
+                    navController.navigate(Routes.detailRoute(id))
+                })
+            }
+            composable(
+                route = Routes.DETAIL,
+                arguments = listOf(navArgument("publicacionId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val vm: MainViewModel = viewModel()
+                val id = backStackEntry.arguments?.getInt("publicacionId") ?: -1
+                DetailScreen(publicacionId = id, viewModel = vm, onBack = { navController.popBackStack() })
+            }
+
+
 
 
 

@@ -11,6 +11,6 @@ object Routes {
     const val CART ="cart"
 
 
-    const val DETAIL = "detail/{itemId}"
-    fun detailRoute(itemId: Int) = "detail/$itemId"
+    const val DETAIL = "detail/{publicacionId}"
+    fun detailRoute(publicacionId: Int) = "detail/$publicacionId"
 }

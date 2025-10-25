@@ -6,6 +6,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,15 +23,42 @@ import com.example.tiendaza.ui.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: MainViewModel, onItemClick: (Int) -> Unit) {
+fun SearchScreen(viewModel: MainViewModel, onItemClick: (Int) -> Unit) {
     val repo = PublicacionRepository()
     val publicaciones = repo.getAll()
 
+    var txtBusqueda by remember { mutableStateOf("") }
+    
+    val publicacionesFiltradas = if (txtBusqueda.isEmpty()) {
+        publicaciones
+    } else {
+        publicaciones.filter {
+            it.titulo.lowercase().startsWith(txtBusqueda.lowercase())
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(title = { Text("Publicaciones") })
-        LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-            items(publicaciones) { publicacion ->
-                PublicacionCard(publicacion = publicacion, onItemClick = onItemClick)
+
+        TopAppBar(title = { Text("Buscar publicaciones") })
+        
+        TextField(
+            value = txtBusqueda,
+            onValueChange = { txtBusqueda = it },
+            label = { Text("Ingresa un nombre para buscar") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        )
+
+        Spacer(Modifier.height(8.dp))
+        
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(8.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(publicacionesFiltradas) { publicacion ->
+                PublicacionSearchCard(publicacion = publicacion, onItemClick = onItemClick)
             }
         }
     }
@@ -36,7 +67,7 @@ fun HomeScreen(viewModel: MainViewModel, onItemClick: (Int) -> Unit) {
 
 
 @Composable
-fun PublicacionCard(publicacion: Publicacion, onItemClick: (Int) -> Unit) {
+fun PublicacionSearchCard(publicacion: Publicacion, onItemClick: (Int) -> Unit) {
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -59,5 +90,4 @@ fun PublicacionCard(publicacion: Publicacion, onItemClick: (Int) -> Unit) {
         }
     }
 }
-
 
