@@ -4,13 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -24,6 +21,7 @@ import com.example.tiendaza.ui.screens.DetailScreen
 import com.example.tiendaza.ui.screens.HomeScreen
 import com.example.tiendaza.ui.screens.ProfileScreen
 import com.example.tiendaza.ui.screens.SearchScreen
+import com.example.tiendaza.ui.screens.VenderScreen
 import com.example.tiendaza.ui.theme.TiendazaTheme
 import com.example.tiendaza.ui.viewmodel.MainViewModel
 
@@ -32,10 +30,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-             App()
+            App()
         }
     }
 }
+
 @Composable
 fun App() {
     val navController = rememberNavController()
@@ -48,7 +47,7 @@ fun App() {
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
-            modifier = androidx.compose.ui.Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding) // Usar el Modifier del framework
         ) {
             composable(Routes.HOME) {
                 val vm: MainViewModel = viewModel()
@@ -75,10 +74,9 @@ fun App() {
             composable(Routes.PROFILE) {
                 ProfileScreen()
             }
-
-
-
-
+            composable(Routes.SELL) {
+                VenderScreen()
+            }
 
         }
     }
