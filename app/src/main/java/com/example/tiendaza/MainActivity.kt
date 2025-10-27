@@ -24,6 +24,9 @@ import com.example.tiendaza.ui.screens.SearchScreen
 import com.example.tiendaza.ui.screens.VenderScreen
 import com.example.tiendaza.ui.theme.TiendazaTheme
 import com.example.tiendaza.ui.viewmodel.MainViewModel
+import com.example.tiendaza.ui.screens.CartScreen
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,7 +80,9 @@ fun App() {
             composable(Routes.SELL) {
                 VenderScreen()
             }
-
+            composable(Routes.CART){
+                CartScreen()
+            }
         }
     }
 }
