@@ -4,16 +4,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.tiendaza.ui.viewmodel.MainViewModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(publicacionId: Int, viewModel: MainViewModel, onBack: () -> Unit) {
+fun DetailScreen(
+    publicacionId: Long,
+    viewModel: MainViewModel,
+    onBack: () -> Unit
+) {
     val item = viewModel.getPublicacion(publicacionId)
 
     Scaffold(
@@ -22,7 +24,10 @@ fun DetailScreen(publicacionId: Int, viewModel: MainViewModel, onBack: () -> Uni
                 title = { Text("Detalle") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Atrás"
+                        )
                     }
                 }
             )
@@ -38,11 +43,11 @@ fun DetailScreen(publicacionId: Int, viewModel: MainViewModel, onBack: () -> Uni
                 Text(item.titulo, style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 Text(item.descripcion, style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(8.dp))
+                Text("Precio: $${item.precio}", style = MaterialTheme.typography.bodyMedium)
             } else {
-                Text("La publicacion no ha sido encontrada")
+                Text("La publicación no ha sido encontrada")
             }
         }
     }
 }
-
-

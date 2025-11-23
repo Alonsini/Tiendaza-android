@@ -5,30 +5,22 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.tiendaza.data.model.Publicacion
-import com.example.tiendaza.data.repository.PublicacionRepository
 import com.example.tiendaza.ui.viewmodel.MainViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(viewModel: MainViewModel, onItemClick: (Int) -> Unit) {
-    val repo = PublicacionRepository()
-    val publicaciones = repo.getAll()
-
+fun SearchScreen(
+    viewModel: MainViewModel,
+    onItemClick: (Long) -> Unit
+) {
+    val publicaciones = viewModel.items.collectAsState().value
     var txtBusqueda by remember { mutableStateOf("") }
-    
+
     val publicacionesFiltradas = if (txtBusqueda.isEmpty()) {
         publicaciones
     } else {
@@ -38,9 +30,8 @@ fun SearchScreen(viewModel: MainViewModel, onItemClick: (Int) -> Unit) {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-
         TopAppBar(title = { Text("Buscar publicaciones") })
-        
+
         TextField(
             value = txtBusqueda,
             onValueChange = { txtBusqueda = it },
@@ -51,7 +42,7 @@ fun SearchScreen(viewModel: MainViewModel, onItemClick: (Int) -> Unit) {
         )
 
         Spacer(Modifier.height(8.dp))
-        
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(8.dp),
@@ -64,10 +55,11 @@ fun SearchScreen(viewModel: MainViewModel, onItemClick: (Int) -> Unit) {
     }
 }
 
-
-
 @Composable
-fun PublicacionSearchCard(publicacion: Publicacion, onItemClick: (Int) -> Unit) {
+fun PublicacionSearchCard(
+    publicacion: Publicacion,
+    onItemClick: (Long) -> Unit
+) {
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -77,9 +69,16 @@ fun PublicacionSearchCard(publicacion: Publicacion, onItemClick: (Int) -> Unit) 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            AsyncImage(
+                model = "https://autazaapi.onrender.com/${publicacion.urlImg}",
+                contentDescription = publicacion.titulo,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+            )
             Spacer(Modifier.height(8.dp))
-            Text(publicacion.titulo, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text("$${publicacion.precio}", color = Color(0xFF4CAF50), fontSize = 14.sp)
+            Text(publicacion.titulo, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            Text("$${publicacion.precio}", color = androidx.compose.ui.graphics.Color(0xFF4CAF50))
             Spacer(Modifier.height(4.dp))
             Button(
                 onClick = { onItemClick(publicacion.id) },
@@ -90,4 +89,3 @@ fun PublicacionSearchCard(publicacion: Publicacion, onItemClick: (Int) -> Unit) 
         }
     }
 }
-

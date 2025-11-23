@@ -25,6 +25,8 @@ import com.example.tiendaza.ui.screens.VenderScreen
 import com.example.tiendaza.ui.theme.TiendazaTheme
 import com.example.tiendaza.ui.viewmodel.MainViewModel
 import com.example.tiendaza.ui.screens.CartScreen
+import com.example.tiendaza.data.repository.PublicacionRepository
+import com.example.tiendaza.ui.viewmodel.MainViewModelFactory
 
 
 
@@ -33,7 +35,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            App()
+            // Envuelve tu App en el tema
+            TiendazaTheme {
+                App()
+            }
         }
     }
 }
@@ -41,8 +46,20 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun App() {
     val navController = rememberNavController()
-    val bottomItems = listOf(BottomNavItem.Home,  BottomNavItem.Search, BottomNavItem.Sell,
-        BottomNavItem.Cart, BottomNavItem.Profile)
+    val bottomItems = listOf(
+        BottomNavItem.Home, BottomNavItem.Search, BottomNavItem.Sell,
+        BottomNavItem.Cart, BottomNavItem.Profile
+    )
+
+    // --- INYECCIÓN DE DEPENDENCIAS MANUAL ---
+    // 1. Crea la instancia del Repository una sola vez.
+    val publicacionRepository = PublicacionRepository()
+    // 2. Crea la Factory que sabe cómo construir el ViewModel.
+    val mainViewModelFactory = MainViewModelFactory(publicacionRepository)
+    // 3. Pasa la factory a todas las llamadas de viewModel().
+    //    El sistema se encargará de crear una única instancia del ViewModel.
+    val mainViewModel: MainViewModel = viewModel(factory = mainViewModelFactory)
+    // -----------------------------------------
 
     Scaffold(
         bottomBar = { BottomBar(navController, bottomItems) }
@@ -50,37 +67,52 @@ fun App() {
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
-            modifier = Modifier.padding(innerPadding) // Usar el Modifier del framework
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.HOME) {
-                val vm: MainViewModel = viewModel()
-                HomeScreen(viewModel = vm, onItemClick = { id ->
-                    navController.navigate(Routes.detailRoute(id))
+                HomeScreen(viewModel = mainViewModel, onItemClick = { id ->
+                    // --- SOLUCIÓN AQUÍ ---
+                    // Convierte el 'id' (Long) a Int antes de navegar
+                    navController.navigate(Routes.detailRoute(id.toInt()))
                 })
             }
 
             composable(Routes.SEARCH) {
-                val vm: MainViewModel = viewModel()
-                SearchScreen(viewModel = vm, onItemClick = { id ->
-                    navController.navigate(Routes.detailRoute(id))
+                SearchScreen(viewModel = mainViewModel, onItemClick = { id ->
+                    // --- Y AQUÍ TAMBIÉN ---
+                    navController.navigate(Routes.detailRoute(id.toInt()))
                 })
             }
             composable(
                 route = Routes.DETAIL,
                 arguments = listOf(navArgument("publicacionId") { type = NavType.IntType })
             ) { backStackEntry ->
-                val vm: MainViewModel = viewModel()
+                // No es necesario obtener el ID aquí de esta forma si el ViewModel ya lo maneja,
+                // pero si DetailScreen lo necesita directamente, está bien.
                 val id = backStackEntry.arguments?.getInt("publicacionId") ?: -1
-                DetailScreen(publicacionId = id, viewModel = vm, onBack = { navController.popBackStack() })
+                DetailScreen(
+                    publicacionId = id,
+                    viewModel = mainViewModel,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             composable(Routes.PROFILE) {
                 ProfileScreen()
             }
             composable(Routes.SELL) {
-                VenderScreen()
+                VenderScreen(
+                    viewModel = mainViewModel,
+                    onCreated = {
+                        // Después de crear, volvemos al Home
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.HOME) { inclusive = false }
+                        }
+                    }
+                )
             }
-            composable(Routes.CART){
+
+            composable(Routes.CART) {
                 CartScreen()
             }
         }
