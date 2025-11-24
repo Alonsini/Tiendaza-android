@@ -8,24 +8,27 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    private const val BASE_URL = "https://autazaapi.onrender.com/"
+    // ✅ URL correcta con /api/ al final
+    private const val BASE_URL = "https://autazaapi.onrender.com/api/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(40, TimeUnit.SECONDS)
-        .readTimeout(40, TimeUnit.SECONDS)
+        .connectTimeout(60, TimeUnit.SECONDS)  // Aumentado para Render
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .addInterceptor(logging)
         .build()
 
-    val service: TiendazaApiService by lazy {
+    // ✅ Cambiado a ApiService (no TiendazaApiService)
+    val apiService: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(TiendazaApiService::class.java)
+            .create(ApiService::class.java)
     }
 }

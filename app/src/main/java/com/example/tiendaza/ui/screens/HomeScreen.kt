@@ -5,8 +5,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,26 +18,67 @@ import com.example.tiendaza.ui.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    viewModel: MainViewModel,
-    onItemClick: (Long) -> Unit
-) {
-    val publicaciones = viewModel.items.collectAsState().value
+fun HomeScreen(viewModel: MainViewModel, onItemClick: (Long) -> Unit) {
+    val publicaciones by viewModel.publicaciones.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(title = { Text("Publicaciones") })
-
-        if (publicaciones.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+        TopAppBar(
+            title = { Text("Publicaciones") },
+            actions = {
+                IconButton(onClick = { viewModel.loadPublicaciones() }) {
+                    Text("🔄")
+                }
             }
-        } else {
-            LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-                items(publicaciones) { publicacion ->
-                    PublicacionCard(publicacion = publicacion, onItemClick = onItemClick)
+        )
+
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Spacer(Modifier.height(16.dp))
+                        Text("Cargando publicaciones...")
+                    }
+                }
+            }
+
+            errorMessage != null -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("❌ Error: $errorMessage")
+                        Spacer(Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadPublicaciones() }) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+            }
+
+            publicaciones.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No hay publicaciones disponibles")
+                }
+            }
+
+            else -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    items(publicaciones) { publicacion ->
+                        PublicacionCard(publicacion = publicacion, onItemClick = onItemClick)
+                    }
                 }
             }
         }
@@ -46,10 +86,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun PublicacionCard(
-    publicacion: Publicacion,
-    onItemClick: (Long) -> Unit
-) {
+fun PublicacionCard(publicacion: Publicacion, onItemClick: (Long) -> Unit) {
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -57,23 +94,25 @@ fun PublicacionCard(
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(8.dp)
         ) {
             AsyncImage(
-                model = "https://autazaapi.onrender.com/${publicacion.urlImg}",
+                model = publicacion.urlImg,
                 contentDescription = publicacion.titulo,
                 modifier = Modifier
+                    .height(120.dp)
                     .fillMaxWidth()
-                    .height(140.dp)
             )
 
             Spacer(Modifier.height(8.dp))
             Text(publicacion.titulo, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Text("$${publicacion.precio}", color = Color(0xFF4CAF50), fontSize = 14.sp)
             Spacer(Modifier.height(4.dp))
+
             Button(
                 onClick = { onItemClick(publicacion.id) },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Ver detalles")
             }

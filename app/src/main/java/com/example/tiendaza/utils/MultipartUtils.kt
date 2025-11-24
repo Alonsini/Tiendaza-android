@@ -1,30 +1,29 @@
 package com.example.tiendaza.utils
 
-import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.InputStream
+import java.io.File
+import java.io.FileOutputStream
 
-fun uriToMultipart(
-    context: Context,
-    uri: Uri,
-    partName: String = "image",
-    fileName: String? = null
-): MultipartBody.Part {
-    val resolver: ContentResolver = context.contentResolver
-    val inputStream: InputStream? = resolver.openInputStream(uri)
-    val bytes = inputStream?.readBytes() ?: ByteArray(0)
-    val mime = resolver.getType(uri) ?: "image/*"
-    val finalFileName = fileName ?: "upload_${System.currentTimeMillis()}.jpg"
+fun uriToMultipart(context: Context, uri: Uri): MultipartBody.Part {
+    val inputStream = context.contentResolver.openInputStream(uri)
+    val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
 
-    val requestFile = RequestBody.create(mime.toMediaTypeOrNull(), bytes)
-    return MultipartBody.Part.createFormData(partName, finalFileName, requestFile)
+    inputStream?.use { input ->
+        FileOutputStream(file).use { output ->
+            input.copyTo(output)
+        }
+    }
+
+    val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+    return MultipartBody.Part.createFormData("image", file.name, requestBody)
 }
 
-fun String.toPlainTextRequestBody(): RequestBody =
-    this.toRequestBody("text/plain".toMediaType())
+fun String.toPlainTextRequestBody(): RequestBody {
+    return this.toRequestBody("text/plain".toMediaTypeOrNull())
+}
