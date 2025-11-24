@@ -14,17 +14,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.tiendaza.ui.screens.*
+import com.example.tiendaza.ui.theme.TiendazaTheme
+import com.example.tiendaza.ui.viewmodel.MainViewModel
+import com.example.tiendaza.ui.viewmodel.MainViewModelFactory
 import com.example.tiendaza.navigation.BottomBar
 import com.example.tiendaza.navigation.BottomNavItem
 import com.example.tiendaza.navigation.Routes
-import com.example.tiendaza.ui.screens.CartScreen
-import com.example.tiendaza.ui.screens.DetailScreen
-import com.example.tiendaza.ui.screens.HomeScreen
-import com.example.tiendaza.ui.screens.ProfileScreen
-import com.example.tiendaza.ui.screens.SearchScreen
-import com.example.tiendaza.ui.screens.VenderScreen
-import com.example.tiendaza.ui.theme.TiendazaTheme
-import com.example.tiendaza.ui.viewmodel.MainViewModel
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,8 +39,8 @@ class MainActivity : ComponentActivity() {
 fun App() {
     val navController = rememberNavController()
 
-    // ⭐ CORRECCIÓN: Declarar el ViewModel
-    val mainViewModel: MainViewModel = viewModel()
+    // ⭐ ViewModel con Factory para evitar el crash
+    val mainViewModel: MainViewModel = viewModel(factory = MainViewModelFactory())
 
     val bottomItems = listOf(
         BottomNavItem.Home,
@@ -56,56 +53,66 @@ fun App() {
     Scaffold(
         bottomBar = { BottomBar(navController, bottomItems) }
     ) { innerPadding ->
+
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
             modifier = Modifier.padding(innerPadding)
         ) {
+
+            // 🏠 Home
             composable(Routes.HOME) {
                 HomeScreen(
                     viewModel = mainViewModel,
-                    onItemClick = { id: Long ->
-                        navController.navigate(Routes.detailRoute(id.toInt()))
+                    onItemClick = { id ->
+                        navController.navigate("${Routes.DETAIL}/$id")
                     }
                 )
             }
 
+            // 🔍 Search
             composable(Routes.SEARCH) {
                 SearchScreen(
                     viewModel = mainViewModel,
-                    onItemClick = { id: Long ->
-                        navController.navigate(Routes.detailRoute(id.toInt()))
+                    onItemClick = { id ->
+                        navController.navigate("${Routes.DETAIL}/$id")
                     }
                 )
             }
 
+            // 🛒 Detail
             composable(
-                route = Routes.DETAIL,
-                arguments = listOf(navArgument("publicacionId") { type = NavType.IntType })
+                route = "${Routes.DETAIL}/{publicacionId}",
+                arguments = listOf(navArgument("publicacionId") { type = NavType.LongType })
             ) { backStackEntry ->
-                val id = backStackEntry.arguments?.getInt("publicacionId") ?: -1
+
+                val id = backStackEntry.arguments?.getLong("publicacionId") ?: -1L
+
                 DetailScreen(
-                    publicacionId = id.toLong(),
+                    publicacionId = id,
                     viewModel = mainViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
 
+            // 👤 Profile
             composable(Routes.PROFILE) {
                 ProfileScreen()
             }
 
+            // ➕ Sell / Vender
             composable(Routes.SELL) {
                 VenderScreen(
                     viewModel = mainViewModel,
                     onCreated = {
                         navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.HOME) { inclusive = false }
+                            popUpTo(Routes.HOME) { inclusive = true }
                         }
                     }
                 )
             }
 
+            // 🛒 Cart
             composable(Routes.CART) {
                 CartScreen()
             }
